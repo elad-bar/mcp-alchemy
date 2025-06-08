@@ -16,7 +16,7 @@ def tests_set_global(k, v):
 
 def get_engine(readonly=True):
     connection_string = os.environ['DB_URL']
-    return create_engine(connection_string, isolation_level='AUTOCOMMIT', execution_options={'readonly': readonly})
+    return create_engine(connection_string, execution_options={'readonly': readonly, 'ssl': False})
 
 def get_db_info():
     engine = get_engine(readonly=True)

@@ -1,6 +1,6 @@
 import shutil, os, difflib, sys
 
-from mcp_alchemy.server import *
+from mcp_alchemy_with_vertica.server import *
 
 d = dict
 

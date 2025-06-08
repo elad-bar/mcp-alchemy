@@ -1,7 +1,7 @@
 [project]
-name = "mcp-alchemy"
+name = "mcp-alchemy-with-vertica"
 version = "2025.5.2.210242"
-description = "A MCP server that connects to your database"
+description = "A MCP server that connects to your database with Vertica support"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
@@ -17,16 +17,16 @@ classifiers = [
 ]
 license-files = ["LICENSE"]
 packages = [
-    {include = "mcp_alchemy"}
+    {include = "mcp_alchemy_with_vertica"}
 ]
 
 [project.scripts]
-mcp-alchemy = "mcp_alchemy.server:main"
+mcp-alchemy = "mcp_alchemy_with_vertica.server:main"
 
 [project.urls]
-Homepage = "https://github.com/runekaagaard/mcp-alchemy"
-Issues = "https://github.com/runekaagaard/mcp-alchemy/issues"
-Disussions = "https://github.com/runekaagaard/mcp-alchemy/discussions"
+Homepage = "https://github.com/elad-bar/mcp-alchemy"
+Issues = "https://github.com/elad-bar/mcp-alchemy/issues"
+Disussions = "https://github.com/elad-bar/mcp-alchemy/discussions"
 
 [build-system]
 requires = ["hatchling>=1.27"]
