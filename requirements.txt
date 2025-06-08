@@ -1,0 +1,6 @@
+mcp>=1.9.1
+fastmcp>=2.7.0
+sqlalchemy>=2.0.36
+build>=1.2.2.post1
+hatchling>=1.27.0
+
