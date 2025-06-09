@@ -1,0 +1,6 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+Pre building the package, set the version in the server.py and pyproject according to the pattern yyyy.M.d.HHmmss

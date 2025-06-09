@@ -1,11 +1,15 @@
+import logging
 import os, json, hashlib
 from typing import Optional
 from datetime import datetime, date
 
-from mcp.server.fastmcp import FastMCP, Context
-from mcp.server.fastmcp.utilities.logging import get_logger
+from fastmcp import FastMCP
+from fastmcp.utilities.logging import get_logger
 
 from sqlalchemy import create_engine, inspect, text
+
+_LOGGER = get_logger(__name__)
+logging.basicConfig(level=logging.DEBUG)
 
 ### Helpers ###
 
@@ -15,11 +19,22 @@ def tests_set_global(k, v):
 ### Database ###
 
 def get_engine(readonly=True):
-    connection_string = os.environ['DB_URL']
-    return create_engine(connection_string, execution_options={'readonly': readonly, 'ssl': False})
+    connection_string = os.environ.get('DB_URL')
+
+    if connection_string is None:
+        _LOGGER.error("DB_URL environment variable is not set")
+
+        return None
+
+    else:
+        return create_engine(connection_string, execution_options={'readonly': readonly, 'ssl': False})
 
 def get_db_info():
     engine = get_engine(readonly=True)
+
+    if engine is None:
+        return "No database connection available"
+
     with engine.connect():
         url = engine.url
         result = [
@@ -38,10 +53,12 @@ def get_db_info():
 
 ### Constants ###
 
-VERSION = "2025.5.2.210242"
+VERSION = "2025.6.9.112859"
 DB_INFO = get_db_info()
 EXECUTE_QUERY_MAX_CHARS = int(os.environ.get('EXECUTE_QUERY_MAX_CHARS', 4000))
 CLAUDE_LOCAL_FILES_PATH = os.environ.get('CLAUDE_LOCAL_FILES_PATH')
+
+_LOGGER.info(f"Starting MCP Alchemy version {VERSION}")
 
 ### MCP ###
 

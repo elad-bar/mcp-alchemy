@@ -3,4 +3,5 @@ fastmcp>=2.7.0
 sqlalchemy>=2.0.36
 build>=1.2.2.post1
 hatchling>=1.27.0
-
+vertica-sqlalchemy>=0.13
+sqlalchemy-vertica-python>=0.6.3
