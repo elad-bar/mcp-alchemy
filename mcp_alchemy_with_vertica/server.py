@@ -34,26 +34,31 @@ def get_db_info():
 
     if engine is None:
         return "No database connection available"
+    
+    try:
 
-    with engine.connect():
-        url = engine.url
-        result = [
-            f"Connected to {engine.dialect.name}",
-            f"version {'.'.join(str(x) for x in engine.dialect.server_version_info)}",
-            f"database {url.database}",
-        ]
+        with engine.connect():
+            url = engine.url
+            result = [
+                f"Connected to {engine.dialect.name}",
+                f"version {'.'.join(str(x) for x in engine.dialect.server_version_info)}",
+                f"database {url.database}",
+            ]
 
-        if url.host:
-            result.append(f"on {url.host}")
+            if url.host:
+                result.append(f"on {url.host}")
 
-        if url.username:
-            result.append(f"as user {url.username}")
+            if url.username:
+                result.append(f"as user {url.username}")
 
-        return " ".join(result) + "."
+            return " ".join(result) + "."
+        
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 ### Constants ###
 
-VERSION = "2025.6.9.112859"
+VERSION = "2025.6.10.122832"
 DB_INFO = get_db_info()
 EXECUTE_QUERY_MAX_CHARS = int(os.environ.get('EXECUTE_QUERY_MAX_CHARS', 4000))
 CLAUDE_LOCAL_FILES_PATH = os.environ.get('CLAUDE_LOCAL_FILES_PATH')

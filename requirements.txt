@@ -1,4 +1,4 @@
-mcp>=1.9.1
+mcp>=1.9.2
 fastmcp>=2.7.0
 sqlalchemy>=2.0.36
 build>=1.2.2.post1

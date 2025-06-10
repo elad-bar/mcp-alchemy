@@ -1,11 +1,11 @@
 [project]
 name = "mcp-alchemy-with-vertica"
-version = "2025.6.9.112859"
+version = "2025.6.10.122832"
 description = "A MCP server that connects to your database with Vertica support"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "mcp>=1.9.1",
+    "mcp>=1.9.2",
     "fastmcp>=2.7.0",
     "sqlalchemy>=2.0.36",
     "vertica-sqlalchemy>=0.13",
