@@ -33,7 +33,7 @@ def get_db_info():
     engine = get_engine(readonly=True)
 
     if engine is None:
-        return "No database connection available"
+        return "Error: No database connection available"
     
     try:
 
@@ -58,7 +58,7 @@ def get_db_info():
 
 ### Constants ###
 
-VERSION = "2025.6.10.122832"
+VERSION = "2025.6.11.094926"
 DB_INFO = get_db_info()
 EXECUTE_QUERY_MAX_CHARS = int(os.environ.get('EXECUTE_QUERY_MAX_CHARS', 4000))
 CLAUDE_LOCAL_FILES_PATH = os.environ.get('CLAUDE_LOCAL_FILES_PATH')
