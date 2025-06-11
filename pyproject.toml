@@ -1,6 +1,6 @@
 [project]
 name = "mcp-alchemy-with-vertica"
-version = "2025.6.11.094926"
+version = "2025.6.11.101758"
 description = "A MCP server that connects to your database with Vertica support"
 readme = "README.md"
 requires-python = ">=3.10"
