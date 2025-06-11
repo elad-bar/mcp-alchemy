@@ -3,7 +3,7 @@ SHELL := /bin/bash
 
 PROJECT := $(shell grep '^name = ' pyproject.toml | cut -d '"' -f2)
 PACKAGE := $(shell echo $(PROJECT) | tr '-' '_')
-VERSION := $(shell date +%Y.%m.%d.%H%M%S | sed 's/\.0\+/\./g')
+VERSION := $(shell date +%Y.%-m.%-d.%H%M%S)
 
 version-bump:
 	sed -i 's/"$(PROJECT)==[^"]*"/"$(PROJECT)==$(VERSION)"/g' README.md
