@@ -6,12 +6,13 @@ This project provides a server implementation for running SQL Alchemy with Verti
 
 The package is hosted on test.pypi.org. You can download the wheel file for a specific version using the scripts below.
 
-### For Windows
+### For Mac / Linux
 
-1. Navigate to the `scripts/windows` directory
-2. Run the PowerShell script:
-```powershell
-.\download_wheel.ps1
+Download and use the [Linux/Mac installation script](scripts/linux/download_wheel.sh):
+
+```bash
+# One-line command to download and run the script
+curl -sSL https://raw.githubusercontent.com/your-repo/mcp-alchemy/main/scripts/linux/download_wheel.sh | bash
 ```
 
 The script will automatically:
@@ -19,13 +20,13 @@ The script will automatically:
 - Download the latest version of the package
 - Generate the recommended mcp.json configuration
 
-### For Linux / Mac
+### For Windows
 
-1. Navigate to the `scripts/linux` directory
-2. Make the script executable and run:
-```bash
-chmod +x download_wheel.sh
-./download_wheel.sh
+Download and use the [Windows installation script](scripts/windows/download_wheel.ps1):
+
+```powershell
+# One-line command to download and run the script
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/your-repo/mcp-alchemy/main/scripts/windows/download_wheel.ps1" -OutFile "download_wheel.ps1"; .\download_wheel.ps1
 ```
 
 The script will automatically:
