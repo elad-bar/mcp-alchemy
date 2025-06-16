@@ -6,169 +6,32 @@ This project provides a server implementation for running SQL Alchemy with Verti
 
 The package is hosted on test.pypi.org. You can download the wheel file for a specific version using the scripts below.
 
-### For Mac / Linux
+### For Windows
 
-Save this script as `download_wheel.sh`:
-
-```bash
-#!/bin/bash
-
-# Get all versions from simple API
-SIMPLE_URL="https://test.pypi.org/simple/mcp-alchemy-with-vertica/"
-echo "Fetching available versions from: $SIMPLE_URL"
-
-# Download and process the content
-SIMPLE_CONTENT=$(curl -s "$SIMPLE_URL")
-if [ $? -ne 0 ]; then
-    echo "Error: Failed to fetch content from $SIMPLE_URL"
-    exit 1
-fi
-
-# Extract version numbers and URLs using grep and sed
-# Format: version|url
-VERSIONS_AND_URLS=$(echo "$SIMPLE_CONTENT" | \
-    grep -o 'href="[^"]*mcp_alchemy_with_vertica-[0-9.]\+-py3-none-any\.whl[^"]*"' | \
-    sed -E 's/href="([^"]*mcp_alchemy_with_vertica-([0-9.]+)-py3-none-any\.whl[^"]*)"/\2|\1/g')
-
-if [ -z "$VERSIONS_AND_URLS" ]; then
-    echo "Error: No versions found"
-    exit 1
-fi
-
-# Sort versions and get the latest one
-# Using sort -V for version number sorting
-LATEST=$(echo "$VERSIONS_AND_URLS" | sort -t'|' -k1,1Vr | head -n1)
-VERSION=$(echo "$LATEST" | cut -d'|' -f1)
-WHEEL_URL=$(echo "$LATEST" | cut -d'|' -f2)
-
-echo "Latest version found: $VERSION"
-
-WHEEL_FILE="mcp_alchemy_with_vertica-$VERSION-py3-none-any.whl"
-echo "Found wheel URL: $WHEEL_URL"
-
-# Download the wheel file
-echo "Downloading $WHEEL_FILE..."
-curl -L "$WHEEL_URL" -o "$WHEEL_FILE"
-
-if [ $? -eq 0 ]; then
-    echo "Successfully downloaded: $WHEEL_FILE"
-    # Make the file executable
-    chmod +x "$WHEEL_FILE"
-    
-    # Print recommended mcp.json
-    echo -e "\nRecommended mcp.json configuration:"
-    cat << EOF
-{
-    "mcpServers": {
-        "mcp-alchemy": {
-            "command": "uvx",
-            "args": [
-                "--from", "$(pwd)/$WHEEL_FILE",
-                "--with", "vertica_python",
-                "mcp-alchemy", "--no-cache"
-            ],
-            "env": {
-                "DB_URL": "vertica+vertica_python://username:password@host:port/dbname"
-            }
-        }
-    }
-}
-EOF
-else
-    echo "Error: Failed to download the wheel file"
-    exit 1
-fi
+1. Navigate to the `scripts/windows` directory
+2. Run the PowerShell script:
+```powershell
+.\download_wheel.ps1
 ```
 
-Make it executable and run:
+The script will automatically:
+- Check and install required dependencies (Python 3.12 and UVX)
+- Download the latest version of the package
+- Generate the recommended mcp.json configuration
+
+### For Linux / Mac
+
+1. Navigate to the `scripts/linux` directory
+2. Make the script executable and run:
 ```bash
 chmod +x download_wheel.sh
 ./download_wheel.sh
 ```
 
-### For Windows
-
-Save this script as `download_wheel.ps1`:
-
-```powershell
-# Get all versions from simple API
-$SIMPLE_URL = "https://test.pypi.org/simple/mcp-alchemy-with-vertica/"
-Write-Host "Fetching available versions from: $SIMPLE_URL"
-
-try {
-    # Download and process the content
-    $SIMPLE_CONTENT = Invoke-WebRequest -Uri $SIMPLE_URL -UseBasicParsing
-
-    # Extract version numbers and URLs using regex
-    $VERSIONS_AND_URLS = $SIMPLE_CONTENT.Content | 
-        Select-String -Pattern 'href="([^"]*mcp_alchemy_with_vertica-([0-9.]+)-py3-none-any\.whl[^"]*)"' -AllMatches |
-        ForEach-Object { $_.Matches } |
-        ForEach-Object {
-            $version = $_.Groups[2].Value
-            $url = $_.Groups[1].Value
-            [PSCustomObject]@{
-                Version = $version
-                Url = $url
-            }
-        }
-
-    if (-not $VERSIONS_AND_URLS) {
-        Write-Host "Error: No versions found"
-        exit 1
-    }
-
-    # Sort versions and get the latest one
-    # Using PowerShell's Version type for proper version sorting
-    $LATEST = $VERSIONS_AND_URLS | 
-        Sort-Object { [Version]($_.Version -replace '(\d+)\.(\d+)\.(\d+)\.(\d+)', '$1.$2.$3.$4') } -Descending |
-        Select-Object -First 1
-
-    $VERSION = $LATEST.Version
-    $WHEEL_URL = $LATEST.Url
-
-    Write-Host "Latest version found: $VERSION"
-
-    $WHEEL_FILE = "mcp_alchemy_with_vertica-$VERSION-py3-none-any.whl"
-    Write-Host "Found wheel URL: $WHEEL_URL"
-
-    # Download the wheel file
-    Write-Host "Downloading $WHEEL_FILE..."
-    Invoke-WebRequest -Uri $WHEEL_URL -OutFile $WHEEL_FILE
-    Write-Host "Successfully downloaded: $WHEEL_FILE"
-    
-    # Print recommended mcp.json
-    Write-Host "`nRecommended mcp.json configuration:"
-    $CurrentPath = (Get-Location).Path
-    $WheelPath = Join-Path $CurrentPath $WHEEL_FILE
-    $MCP_JSON = @{
-        mcpServers = @{
-            "mcp-alchemy" = @{
-                command = "uvx"
-                args = @(
-                    "--from", $WheelPath
-                    "--with", "vertica_python"
-                    "mcp-alchemy", "--no-cache"
-                )
-                env = @{
-                    DB_URL = "vertica+vertica_python://username:password@host:port/dbname"
-                }
-            }
-        }
-    }
-    $MCP_JSON | ConvertTo-Json -Depth 10
-}
-catch {
-    Write-Host "Error: $_"
-    exit 1
-}
-```
-
-Run in PowerShell:
-```powershell
-.\download_wheel.ps1
-```
-
-After downloading the wheel file, you can use it in your `mcp.json` configuration or with the `uvx` command.
+The script will automatically:
+- Check and install required dependencies (Python 3.12 and UVX)
+- Download the latest version of the package
+- Generate the recommended mcp.json configuration
 
 ## Running the MCP Server
 
