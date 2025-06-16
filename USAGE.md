@@ -47,6 +47,42 @@ The `mcp.json` configuration has the following structure:
    - The MCP server will automatically connect using your chosen configuration method
    - You can now use SQL Alchemy models and queries with Vertica support
 
+## Available Tools
+
+The MCP server exposes the following tools for database interaction:
+
+1. `all_table_names()`
+   - Returns all table names in the database as a comma-separated list
+   - No parameters required
+   - Example: `all_table_names()`
+
+2. `filter_table_names(q: str)`
+   - Returns table names containing the specified substring
+   - Parameters:
+     - `q`: The substring to search for in table names
+   - Example: `filter_table_names("user")`
+
+3. `schema_definitions(table_names: list[str])`
+   - Returns detailed schema information for specified tables
+   - Parameters:
+     - `table_names`: List of table names to get schema information for
+   - Returns: Detailed schema including columns, data types, primary keys, and relationships
+   - Example: `schema_definitions(["users", "orders"])`
+
+4. `execute_query(query: str, params: dict = {})`
+   - Executes a SQL query and returns results in a readable format
+   - Parameters:
+     - `query`: The SQL query to execute
+     - `params`: Dictionary of parameters for safe query parameter substitution
+   - Features:
+     - Results are truncated after 4000 characters by default
+     - Supports parameterized queries to prevent SQL injection
+     - Returns results in a clean, vertical format
+     - Handles NULL values and datetime types appropriately
+   - Example: `execute_query("SELECT * FROM users WHERE id = :id", {"id": 123})`
+
+Note: All tools include database connection information in their output, showing the connected database type, version, and connection details.
+
 ## Troubleshooting
 
 1. Connection Issues:
@@ -75,4 +111,4 @@ For issues and feature requests, please contact the development team or create a
 
 ## License
 
-[Specify your license here] 
+[Specify your license here]
