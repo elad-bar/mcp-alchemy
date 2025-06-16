@@ -12,7 +12,7 @@ Download and use the [Linux/Mac installation script](scripts/linux/download_whee
 
 ```bash
 # One-line command to download and run the script
-curl -sSL https://raw.githubusercontent.com/your-repo/mcp-alchemy/main/scripts/linux/download_wheel.sh | bash
+curl -sSL https://raw.githubusercontent.com/elad-bar/mcp-alchemy/main/scripts/linux/download_wheel.sh | bash
 ```
 
 The script will automatically:
@@ -26,7 +26,7 @@ Download and use the [Windows installation script](scripts/windows/download_whee
 
 ```powershell
 # One-line command to download and run the script
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/your-repo/mcp-alchemy/main/scripts/windows/download_wheel.ps1" -OutFile "download_wheel.ps1"; .\download_wheel.ps1
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/elad-bar/mcp-alchemy/main/scripts/windows/download_wheel.ps1" -OutFile "download_wheel.ps1"; .\download_wheel.ps1
 ```
 
 The script will automatically:
