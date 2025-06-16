@@ -2,69 +2,9 @@
 
 This project provides a server implementation for running SQL Alchemy with Vertica database support through the MCP (Model-Controller-Provider) framework. It enables efficient analytics operations using Cursor IDE.
 
-## Package Download
-
-The package is hosted on test.pypi.org. You can download the wheel file for a specific version using the scripts below.
-
-### For Mac / Linux
-
-Download and use the [Linux/Mac installation script](scripts/linux/download_wheel.sh):
-
-```bash
-# One-line command to download and run the script
-curl -sSL https://raw.githubusercontent.com/elad-bar/mcp-alchemy/main/scripts/linux/download_wheel.sh | bash
-```
-
-The script will automatically:
-- Check and install required dependencies (Python 3.12 and UVX)
-- Download the latest version of the package
-- Generate the recommended mcp.json configuration
-
-### For Windows
-
-Download and use the [Windows installation script](scripts/windows/download_wheel.ps1):
-
-```powershell
-# One-line command to download and run the script
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/elad-bar/mcp-alchemy/main/scripts/windows/download_wheel.ps1" -OutFile "download_wheel.ps1"; .\download_wheel.ps1
-```
-
-The script will automatically:
-- Check and install required dependencies (Python 3.12 and UVX)
-- Download the latest version of the package
-- Generate the recommended mcp.json configuration
-
 ## Running the MCP Server
 
-There are two ways to run the MCP server:
-
-### 1. Using Command Line (uvx)
-
-Run the server using the `uvx` command:
-
-```bash
-VERSION="2025.6.10.101944"
-uvx --from PATH_TO_PACKAGE/mcp_alchemy_with_vertica-$VERSION-py3-none-any.whl \
-    --with vertica_python \
-    mcp-alchemy --no-cache
-```
-
-Note: The package wheel filename includes the version number (e.g., `2025.6.10.122832`). Make sure to use the correct version for your setup.
-
-Set the database connection URL as an environment variable:
-```bash
-export DB_URL="vertica+vertica_python://username:password@host:port/dbname"
-```
-
-Command line parameters explained:
-- `--from`: Path to the local package wheel file (format: `mcp_alchemy_with_vertica-{version}-py3-none-any.whl`)
-- `--with`: Additional dependencies to install (vertica_python)
-- `mcp-alchemy`: The package to run
-- `--no-cache`: Disable caching
-
-### 2. Using Configuration File (mcp.json)
-
-Create a `mcp.json` file in your project root. Here's a working example:
+Create a `mcp.json` file in your project .cursor directory. Here's a working example:
 
 ```json
 {
@@ -72,7 +12,7 @@ Create a `mcp.json` file in your project root. Here's a working example:
         "mcp-alchemy": {
             "command": "uvx",
             "args": [
-                "--from", "PATH_TO_PACKAGE\\mcp_alchemy_with_vertica-2025.6.10.122832-py3-none-any.whl",
+                "--from", "https://test-files.pythonhosted.org/packages/86/86/7d01520ef628edc0a8407353dad7b6b04fe3b3edec565a6468d6119db66b/mcp_alchemy_with_vertica-2025.6.11.102851-py3-none-any.whl",
                 "--with", "vertica_python",
                 "mcp-alchemy", "--no-cache"
             ],
