@@ -19,7 +19,7 @@ IS_ENTRYPOINT = __name__ == "__main__"
 
 ARGS = MCPServerArguments.load(IS_ENTRYPOINT)
 
-mcp = FastMCP(ARGS.name, host=ARGS.host, port=ARGS.port, debug=ARGS.debug)
+mcp = FastMCP(ARGS.name, host=ARGS.host, port=ARGS.port, debug=ARGS.debug, stateless_http=ARGS.stateless_http)
 
 logger.info(f"Starting MCP Alchemy [{ARGS.name}], Version: {VERSION}")
 logger.info(f"Transport: {ARGS.transport}")
