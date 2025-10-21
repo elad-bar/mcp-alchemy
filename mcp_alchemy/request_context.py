@@ -95,7 +95,7 @@ class RequestContext:
 
         db_context: DatabaseContext | None = None
 
-        if db_context in DATABASE_CONTEXT_LIST:
+        if connection_id in DATABASE_CONTEXT_LIST:
             db_context = DATABASE_CONTEXT_LIST[connection_id]
 
         if db_context is None or not db_context.is_connected():
