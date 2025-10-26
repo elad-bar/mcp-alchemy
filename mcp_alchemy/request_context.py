@@ -1,6 +1,8 @@
 import hashlib
 import json
 import os
+import threading
+
 from time import sleep
 from typing import Any
 
@@ -12,7 +14,7 @@ from mcp_alchemy.database_context import DatabaseContext
 
 logger = get_logger(__name__)
 
-DISPOSE_UNUSED_CONNECTIONS_INTERVAL = 60
+DISPOSE_UNUSED_CONNECTIONS_INTERVAL = 1
 
 PARAM_DB_URL = "DB_URL"
 PARAM_DB_ENGINE_OPTIONS = "DB_ENGINE_OPTIONS"
@@ -61,7 +63,7 @@ class RequestContext:
 
         if self.request is None:
             data = {
-                str(key).upper(): os.environ[key]
+                key: os.environ[key]
                 for key in os.environ
             }
 
@@ -103,12 +105,13 @@ class RequestContext:
 
     @staticmethod
     def header_key_to_env_var_format(key: str) -> str:
-        key = key.lower()
-
-        if key.startswith("x-"):
+        if key.lower().startswith("x-") and key in SUPPORTED_HEADERS:
             key  = SUPPORTED_HEADERS.get(key)
+            
+        else:
+            key = key.upper()
 
-        return key.upper()
+        return key
 
     def get_parameter(self, key: str, value: Any | None):
         if self.request is not None:
@@ -125,8 +128,8 @@ class RequestContext:
         return RequestContext(ctx)
 
     @staticmethod
-    def dispose_unused_connections():
-        while True:
+    def dispose_unused_connections(stop_event: threading.Event):
+        while not stop_event.is_set():
             closed_connections = []
             for connection_id in DATABASE_CONTEXT_LIST:
                 db_context = DATABASE_CONTEXT_LIST[connection_id]

@@ -1,3 +1,6 @@
+import asyncio
+import os
+import signal
 import threading
 
 from mcp.server.fastmcp import FastMCP, Context
@@ -89,15 +92,24 @@ async def execute_query(query: str, params, ctx: Context | None = None) -> str:
 
     return result
 
+
 def main():
-    unused_connection_cleaner_thread = threading.Thread(
-        target=RequestContext.dispose_unused_connections,
-        daemon=True
-    )
-
-    unused_connection_cleaner_thread.start()
-
-    mcp.run(transport=ARGS.transport)
+    stop_event = threading.Event()
+    
+    thread = threading.Thread(target=RequestContext.dispose_unused_connections, args=(stop_event,), daemon=True)
+            
+    try:
+        thread.start()
+        
+        mcp.run(transport=ARGS.transport)
+            
+    except KeyboardInterrupt:
+        logger.info("KeyboardInterrupt received")
+    
+    finally:    
+        stop_event.set()
+        thread.join()
+    
 
 if IS_ENTRYPOINT:
     main()

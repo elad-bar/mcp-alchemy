@@ -30,8 +30,25 @@ class DatabaseContext:
 
     def _get_connection(self) -> Connection:
         try:
-            logger.info(f"Creating connection to: {self._db_url}, Options: {self._db_engine_options}")
-
+            masked_db_url = self._db_url
+            
+            if masked_db_url is None:                
+                raise ValueError("Database URL is required")
+                
+            non_senstive_db_host = None
+            
+            if "://" in masked_db_url:
+                db_protocol = masked_db_url.split("://")[0]
+                masked_db_url = masked_db_url.split("://")[1]
+                
+            if "@" in masked_db_url:
+                masked_db_parts = masked_db_url.split("@")
+                non_senstive_db_host = masked_db_parts[len(masked_db_parts) - 1]
+                
+            masked_db_url = f"{db_protocol}://{non_senstive_db_host}"
+            
+            logger.info(f"Creating connection to: {masked_db_url}, Options: {self._db_engine_options}")
+                
             engine = create_engine(self._db_url, **self._db_engine_options)
             connection = engine.connect()
 
