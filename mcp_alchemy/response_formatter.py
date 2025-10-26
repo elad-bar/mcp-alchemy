@@ -1,6 +1,3 @@
-import hashlib
-import json
-import os
 from datetime import datetime, date
 
 from mcp.server.fastmcp.utilities.logging import get_logger
@@ -8,12 +5,6 @@ from mcp.server.fastmcp.utilities.logging import get_logger
 from mcp_alchemy.request_context import RequestContext
 
 SHOW_KEY_ONLY = {"nullable", "autoincrement"}
-SAVED_CLAUDE_FILE_NAME_PLACEHOLDER = "[FILE_NAME]"
-SAVED_CLAUDE_RESULT = (
-    f"Full result set url: https://cdn.jsdelivr.net/pyodide/claude-local-files/{SAVED_CLAUDE_FILE_NAME_PLACEHOLDER}"
-    " (format: [[row1_value1, row1_value2, ...], [row2_value1, row2_value2, ...], ...]])"
-    " (ALWAYS prefer fetching this url in artifacts instead of hardcoding the values if at all possible)"
-)
 
 logger = get_logger(__name__)
 
@@ -46,7 +37,6 @@ class ResponseFormatter:
         query = self._request_context.get_parameter("query", query)
         params = self._request_context.get_parameter("params", params)
 
-        claude_local_files_path = self._request_context.claude_local_files_path
         execute_query_max_chars = self._request_context.execute_query_max_chars
 
         try:
@@ -58,11 +48,7 @@ class ResponseFormatter:
                 message = f"Success: {cursor.rowcount} rows affected"
 
             else:
-                output, full_results = self._format_query_execution_result(cursor, claude_local_files_path, execute_query_max_chars)
-
-                if full_results_message := self._save_full_results(full_results, claude_local_files_path):
-                    output.append(full_results_message)
-
+                output = self._format_query_execution_result(cursor, execute_query_max_chars)
                 message = "\n".join(output)
 
             logger.info(message)
@@ -76,16 +62,14 @@ class ResponseFormatter:
 
             return message
 
-    def _format_query_execution_result(self, cursor, claude_local_files_path, execute_query_max_chars):
+    def _format_query_execution_result(self, cursor, execute_query_max_chars):
         """Format rows in a clean vertical format"""
-        output, full_results = [], []
+        output = []
         size, i, did_truncate = 0, 0, False
 
         i = 0
         while row := cursor.fetchone():
             i += 1
-            if claude_local_files_path:
-                full_results.append(row)
 
             if did_truncate:
                 continue
@@ -101,47 +85,22 @@ class ResponseFormatter:
 
             if size > execute_query_max_chars:
                 did_truncate = True
-                if not claude_local_files_path:
-                    break
+                break
             else:
                 output.extend(sub_result)
 
         if i == 0:
-            return ["No rows returned"], full_results
+            return ["No rows returned"]
 
         elif did_truncate:
-            if claude_local_files_path:
-                output.append(f"Result: {i} rows (output truncated)")
-            else:
-                output.append(f"Result: showing first {i - 1} rows (output truncated)")
+            output.append(f"Result: showing first {i - 1} rows (output truncated)")
 
-            return output, full_results
+            return output
 
         else:
             output.append(f"Result: {i} rows")
 
-            return output, full_results
-
-    def _save_full_results(self, full_results, claude_local_files_path):
-        """Save complete result set for Claude if configured"""
-        if not claude_local_files_path:
-            return None
-
-        def serialize_row(row):
-            return [self._format_value(val) for val in row]
-
-        data = [serialize_row(row) for row in full_results]
-        file_hash = hashlib.sha256(json.dumps(data).encode()).hexdigest()
-        file_name = f"{file_hash}.json"
-
-        with open(os.path.join(claude_local_files_path, file_name), 'w') as f:
-            data_str = json.dumps(data)
-
-            f.write(data_str)
-
-        result = SAVED_CLAUDE_RESULT.replace(SAVED_CLAUDE_FILE_NAME_PLACEHOLDER, file_name)
-
-        return result
+            return output
 
     @staticmethod
     def _format_value(val) -> str:

@@ -17,13 +17,11 @@ DISPOSE_UNUSED_CONNECTIONS_INTERVAL = 60
 PARAM_DB_URL = "DB_URL"
 PARAM_DB_ENGINE_OPTIONS = "DB_ENGINE_OPTIONS"
 PARAM_EXECUTE_QUERY_MAX_CHARS = "EXECUTE_QUERY_MAX_CHARS"
-PARAM_CLAUDE_LOCAL_FILES_PATH = "CLAUDE_LOCAL_FILES_PATH"
 
 SUPPORTED_ENV_VARS = [
     PARAM_DB_URL,
     PARAM_DB_ENGINE_OPTIONS,
-    PARAM_EXECUTE_QUERY_MAX_CHARS,
-    PARAM_CLAUDE_LOCAL_FILES_PATH
+    PARAM_EXECUTE_QUERY_MAX_CHARS
 ]
 
 SUPPORTED_HEADERS = {
@@ -53,7 +51,6 @@ class RequestContext:
     db_url: str
     db_engine_options: dict
     execute_query_max_chars: int
-    claude_local_files_path: str | None
     request: Request | None
     context: Context | None
     db_context: DatabaseContext | None
@@ -80,7 +77,6 @@ class RequestContext:
             raise ValueError("DB_URL cannot be None")
 
         self.execute_query_max_chars = int(data.get(PARAM_EXECUTE_QUERY_MAX_CHARS, DEFAULT_EXECUTE_QUERY_MAX_CHARS))
-        self.claude_local_files_path = data.get(PARAM_CLAUDE_LOCAL_FILES_PATH)
 
         db_engine_options = data.get(PARAM_DB_ENGINE_OPTIONS, DEFAULT_DB_ENGINE_OPTIONS)
 

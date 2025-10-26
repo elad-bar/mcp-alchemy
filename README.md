@@ -12,7 +12,6 @@ Let Claude be your database expert! MCP Alchemy connects Claude Desktop directly
 - Assist in writing and validating SQL queries
 - Displays relationships between tables
 - Analyze large datasets and create reports
-- Claude Desktop Can analyse and create artifacts for very large datasets using [claude-local-files](https://github.com/runekaagaard/claude-local-files).
 
 Works with PostgreSQL, MySQL, MariaDB, SQLite, Oracle, MS SQL Server, CrateDB, Vertica,
 and a host of other [SQLAlchemy-compatible](https://docs.sqlalchemy.org/en/20/dialects/) databases.
@@ -217,7 +216,6 @@ For streamable-http transport, use the MCP HTTP client:
 - `X-DB-URL`: Database connection string
 - `X-DB-ENGINE-OPTIONS`: JSON string with SQLAlchemy engine options (optional)
 - `X-EXECUTE-QUERY-MAX-CHARS`: Maximum output length (optional)
-- `X-CLAUDE-LOCAL-FILES-PATH`: Directory for full result sets (optional)
 
 ### Docker Deployment
 
@@ -261,7 +259,6 @@ When running as a remote server:
 ## Environment Variables
 
 - `DB_URL`: SQLAlchemy [database URL](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls) (required)
-- `CLAUDE_LOCAL_FILES_PATH`: Directory for full result sets (optional)
 - `EXECUTE_QUERY_MAX_CHARS`: Maximum output length (optional, default 4000)
 - `DB_ENGINE_OPTIONS`: JSON string containing additional SQLAlchemy engine options (optional)
 
@@ -341,21 +338,9 @@ For databases with aggressive timeout settings (like MySQL's 8-hour default), th
   ```
   - Features:
     - Smart truncation of large results
-    - Full result set access via [claude-local-files](https://github.com/runekaagaard/claude-local-files) integration
     - Clean NULL value display
     - ISO formatted dates
     - Clear row separation
-
-## Claude Local Files
-
-When [claude-local-files](https://github.com/runekaagaard/claude-local-files) is configured:
-
-- Access complete result sets beyond Claude's context window
-- Generate detailed reports and visualizations
-- Perform deep analysis on large datasets
-- Export results for further processing
-
-The integration automatically activates when `CLAUDE_LOCAL_FILES_PATH` is set.
 
 ## Developing
 
@@ -382,7 +367,6 @@ Then set this in claude_desktop_config.json:
 - **[MCP Redmine](https://github.com/runekaagaard/mcp-redmine)** - Let Claude Desktop manage your Redmine projects and issues.
 - **[MCP Notmuch Sendmail](https://github.com/runekaagaard/mcp-notmuch-sendmail)** - Email assistant for Claude Desktop using notmuch.
 - **[Diffpilot](https://github.com/runekaagaard/diffpilot)** - Multi-column git diff viewer with file grouping and tagging.
-- **[Claude Local Files](https://github.com/runekaagaard/claude-local-files)** - Access local files in Claude Desktop artifacts.
 
 ## MCP Directory Listings
 

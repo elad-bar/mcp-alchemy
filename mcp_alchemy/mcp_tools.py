@@ -24,7 +24,6 @@ class MCPTool(StrEnum):
             description = (
                 "Execute a SQL query and return results in a readable format.\n"
                 "Results will be truncated after characters as configured in the parameter.\n"
-                "Claude Desktop may fetch the full result set via an url for analysis and artifacts (Optional - using CLAUDE_LOCAL_FILES_PATH).\n"
                 "IMPORTANT: \n"
                 "1. You MUST use the params parameter for query parameter substitution to prevent SQL injection.\n"
                 "\tExample: 'WHERE id = :id' with params={'id': 123}\n"
