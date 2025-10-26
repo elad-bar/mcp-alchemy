@@ -1,7 +1,9 @@
+import re
 import time
 
 from mcp.server.fastmcp.utilities.logging import get_logger
 from sqlalchemy import Connection, create_engine, text, inspect
+from sqlalchemy.engine import make_url
 
 logger = get_logger(__name__)
 
@@ -30,22 +32,9 @@ class DatabaseContext:
 
     def _get_connection(self) -> Connection:
         try:
-            masked_db_url = self._db_url
+            db_conn_str = make_url(self._db_url)
             
-            if masked_db_url is None:                
-                raise ValueError("Database URL is required")
-                
-            non_senstive_db_host = None
-            
-            if "://" in masked_db_url:
-                db_protocol = masked_db_url.split("://")[0]
-                masked_db_url = masked_db_url.split("://")[1]
-                
-            if "@" in masked_db_url:
-                masked_db_parts = masked_db_url.split("@")
-                non_senstive_db_host = masked_db_parts[len(masked_db_parts) - 1]
-                
-            masked_db_url = f"{db_protocol}://{non_senstive_db_host}"
+            masked_db_url = str(db_conn_str.set(password="********"))
             
             logger.info(f"Creating connection to: {masked_db_url}, Options: {self._db_engine_options}")
                 
