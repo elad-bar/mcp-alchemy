@@ -1,6 +1,4 @@
-import asyncio
-import os
-import signal
+import json
 import threading
 
 from mcp.server.fastmcp import FastMCP, Context
@@ -51,7 +49,7 @@ def all_table_names(ctx: Context | None = None) -> str:
 
     logger.info(f"{len(all_tables):,.0f} table available")
 
-    result = ", ".join(all_tables)
+    result = json.dumps({"tables": all_tables, "count": len(all_tables)})
 
     return result
 
@@ -67,7 +65,7 @@ def filter_table_names(q: str, ctx: Context | None = None) -> str:
 
     logger.info(f"{len(filtered_tables):,.0f} table names containing '{query}'")
 
-    result = ", ".join(filtered_tables)
+    result = json.dumps({"tables": filtered_tables, "count": len(filtered_tables), "query": query})
 
     return result
 
@@ -78,7 +76,9 @@ async def schema_definitions(table_names: list[str], ctx: Context | None = None)
 
     response_parser = ResponseFormatter(request_context)
 
-    result = response_parser.get_schema_list_response(table_names)
+    data = response_parser.get_schema_list_response(table_names)
+    
+    result = json.dumps(data)
 
     return result
 
@@ -88,7 +88,9 @@ async def execute_query(query: str, params, ctx: Context | None = None) -> str:
 
     response_parser = ResponseFormatter(request_context)
 
-    result = response_parser.get_execute_query_response(query, params)
+    data = response_parser.get_execute_query_response(query, params)
+    
+    result = json.dumps(data)
 
     return result
 

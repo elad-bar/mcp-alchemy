@@ -77,16 +77,24 @@ class DatabaseContext:
 
         for table_name in table_names:
             columns = inspector.get_columns(table_name)
-            foreign_keys = inspector.get_foreign_keys(table_name)
-            pk_constraint = inspector.get_pk_constraint(table_name)
-            primary_keys = set(pk_constraint["constrained_columns"])
-
+            
             data = {
                 "name": table_name,
-                "columns": columns,
-                "foreign_keys": foreign_keys,
-                "primary_keys": primary_keys
+                "found": len(columns) > 0
             }
+            
+            if len(columns) > 0:
+                foreign_keys = inspector.get_foreign_keys(table_name)
+                pk_constraint = inspector.get_pk_constraint(table_name)
+                primary_keys = set(pk_constraint["constrained_columns"])
+
+                found_data = {
+                    "columns": columns,
+                    "foreign_keys": foreign_keys,
+                    "primary_keys": primary_keys
+                }
+                
+                data.update(found_data)
 
             table_schema_list.append(data)
 
