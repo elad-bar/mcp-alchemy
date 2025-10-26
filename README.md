@@ -149,6 +149,115 @@ For connecting to CrateDB Cloud, use a URL like
 }
 ```
 
+## Usage as Remote MCP Server
+
+You can also run MCP Alchemy as a standalone remote server that can be accessed by multiple MCP clients. This is useful for:
+
+- Sharing database access across multiple Claude Desktop instances
+- Running the server on a different machine
+- Integrating with other MCP-compatible tools
+- Setting up centralized database access for teams
+
+### Starting the Remote Server
+
+1. **Install the package:**
+   ```bash
+   pip install mcp-alchemy
+   ```
+
+2. **Start the server with SSE / Streamable HTTP transport:**
+   ```bash
+   python -m mcp_alchemy.server --transport sse --host 0.0.0.0 --port 8000
+   ```
+
+   Or with streamable-http transport:
+   ```bash
+   python -m mcp_alchemy.server --transport streamable-http --host 0.0.0.0 --port 8000
+   ```
+
+   The server will be accessible at `http://localhost:8000` (or your specified host/port).
+
+### Connecting from Claude Desktop
+
+#### Using SSE Transport
+
+For SSE transport, configure Claude Desktop to connect via HTTP:
+
+```json
+{
+  "mcpServers": {
+    "remote_alchemy_sse": {
+      "url": "http://localhost:8000/sse",
+      "headers": {
+        "DB_URL": "postgresql://user:password@localhost/dbname"
+      }
+    }
+  }
+}
+```
+
+#### Using Streamable-HTTP Transport
+
+For streamable-http transport, use the MCP HTTP client:
+
+```json
+{
+  "mcpServers": {
+    "remote_alchemy_http": {
+      "url": "http://localhost:8000/mcp",
+      "env": {
+        "X-DB-URL": "postgresql://user:password@localhost/dbname"
+      }
+    }
+  }
+}
+```
+
+**Note:** With streamable-http, configuration is passed via HTTP headers:
+- `X-DB-URL`: Database connection string
+- `X-DB-ENGINE-OPTIONS`: JSON string with SQLAlchemy engine options (optional)
+- `X-EXECUTE-QUERY-MAX-CHARS`: Maximum output length (optional)
+- `X-CLAUDE-LOCAL-FILES-PATH`: Directory for full result sets (optional)
+
+### Docker Deployment
+
+For production deployments, you can run MCP Alchemy in Docker:
+
+```dockerfile
+FROM python:3.11-slim
+
+RUN pip install mcp-alchemy psycopg2-binary
+
+ENV DB_URL="postgresql://user:password@dbhost/dbname"
+
+# Expose port for remote connections
+EXPOSE 8000
+
+# Start with SSE transport for remote access
+CMD ["python", "-m", "mcp_alchemy.server", "--transport", "sse", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+```bash
+# Build and run
+docker build -t mcp-alchemy .
+docker run -p 8000:8000 -e DB_URL="postgresql://user:password@host/db" mcp-alchemy
+```
+
+**Alternative with streamable-http:**
+```dockerfile
+CMD ["python", "-m", "mcp_alchemy.server", "--transport", "streamable-http", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+### Security Considerations
+
+When running as a remote server:
+
+- **Network Security**: Use firewalls and VPNs to restrict access
+- **Authentication**: Consider implementing authentication layers
+- **Database Permissions**: Use database users with minimal required permissions
+- **TLS/SSL**: Use encrypted connections for database and MCP communication
+- **Environment Variables**: Secure sensitive configuration like database credentials
+
 ## Environment Variables
 
 - `DB_URL`: SQLAlchemy [database URL](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls) (required)

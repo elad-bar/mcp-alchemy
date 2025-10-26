@@ -1,0 +1,11 @@
+# Core dependencies for MCP Alchemy
+mcp[cli]>=1.18,<2
+sqlalchemy>=2.0.36
+
+# Development dependencies (optional)
+# Uncomment the following lines if you need to build/package the project
+# build>=1.2.2.post1
+# hatchling>=1.27.0
+
+starlette~=0.48.0
+
