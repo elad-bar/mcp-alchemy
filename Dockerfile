@@ -7,7 +7,11 @@ WORKDIR /app
  
 # Ensure Python can import the copied package directory
 ENV PYTHONPATH=/app
- 
+
+# Build argument to enable debug mode
+ARG DEBUG_MODE=false
+ENV DEBUG_MODE=${DEBUG_MODE}
+
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     gcc \
@@ -27,6 +31,11 @@ USER mcpuser
  
 # Expose port for HTTP transport
 EXPOSE 8000
- 
+
 # Run the server as a module so package imports resolve
-CMD ["python", "mcp_alchemy/server.py", "--transport", "streamable-http", "--host", "0.0.0.0", "--port", "8000"]
+# Use shell form to allow conditional debug flag based on build argument
+CMD if [ "$DEBUG_MODE" = "true" ]; then \
+      python mcp_alchemy/server.py --transport streamable-http --host 0.0.0.0 --port 8000 --debug true; \
+    else \
+      python mcp_alchemy/server.py --transport streamable-http --host 0.0.0.0 --port 8000; \
+    fi
