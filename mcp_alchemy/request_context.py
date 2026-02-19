@@ -1,18 +1,17 @@
 import hashlib
 import json
+import logging
 import os
 import threading
 
 from time import sleep
-from typing import Any
 
-from mcp.server.fastmcp import Context
-from mcp.server.fastmcp.utilities.logging import get_logger
-from starlette.requests import Request
+from fastmcp import Context
+from fastmcp.server.dependencies import get_http_headers
 
 from mcp_alchemy.database_context import DatabaseContext
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 DISPOSE_UNUSED_CONNECTIONS_INTERVAL = 1
 
@@ -53,24 +52,22 @@ class RequestContext:
     db_url: str
     db_engine_options: dict
     execute_query_max_chars: int
-    request: Request | None
     context: Context | None
     db_context: DatabaseContext | None
 
     def __init__(self, ctx: Context | None = None):
         self.context = ctx
-        self.request = ctx.request_context.request if ctx and ctx.request_context else None
+        headers = get_http_headers(include_all=True)
 
-        if self.request is None:
+        if headers:
+            data = {
+                self.header_key_to_env_var_format(key): value
+                for key, value in headers.items()
+            }
+        else:
             data = {
                 key: os.environ[key]
                 for key in os.environ
-            }
-
-        else:
-            data = {
-                self.header_key_to_env_var_format(key): self.request.headers[key]
-                for key in self.request.headers
             }
 
         self.db_url = data.get(PARAM_DB_URL)
@@ -112,16 +109,6 @@ class RequestContext:
             key = key.upper()
 
         return key
-
-    def get_parameter(self, key: str, value: Any | None):
-        if self.request is not None:
-            if value is None:
-                value = self.request.query_params.get(key)
-
-            if value is None:
-                value = self.request.headers.get(key)
-
-        return value
 
     @staticmethod
     def load(ctx: Context | None = None):

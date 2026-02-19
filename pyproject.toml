@@ -1,11 +1,11 @@
 [project]
 name = "mcp-alchemy"
-version = "2025.8.15.91819"
+version = "2026.2.19.100000"
 description = "A MCP server that connects to your database"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "mcp[cli]>=1.18,<2",
+    "fastmcp>=3.0.0",
     "sqlalchemy>=2.0.36",
 ]
 authors = [

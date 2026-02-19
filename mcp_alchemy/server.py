@@ -1,8 +1,9 @@
 import json
+import logging
+import os
 import threading
 
-from mcp.server.fastmcp import FastMCP, Context
-from mcp.server.fastmcp.utilities.logging import get_logger
+from fastmcp import FastMCP, Context
 
 from mcp_alchemy.mcp_args import MCPServerArguments
 from mcp_alchemy.mcp_tools import MCPTool
@@ -12,15 +13,18 @@ from mcp_alchemy.response_formatter import ResponseFormatter
 def tests_set_global(k, v):
     globals()[k] = v
 
-VERSION = "2025.10.21.94000"
+VERSION = "2026.2.19.100000"
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 IS_ENTRYPOINT = __name__ == "__main__"
 
 ARGS = MCPServerArguments.load(IS_ENTRYPOINT)
 
-mcp = FastMCP(ARGS.name, host=ARGS.host, port=ARGS.port, debug=ARGS.debug, stateless_http=ARGS.stateless_http)
+if ARGS.debug:
+    os.environ["FASTMCP_DEBUG"] = "true"
+
+mcp = FastMCP(ARGS.name)
 
 logger.info(f"Starting MCP Alchemy [{ARGS.name}], Version: {VERSION}")
 logger.info(f"Transport: {ARGS.transport}")
@@ -57,15 +61,13 @@ def all_table_names(ctx: Context | None = None) -> str:
 def filter_table_names(q: str, ctx: Context | None = None) -> str:
     request_context = RequestContext.load(ctx)
 
-    query = request_context.get_parameter("q", q)
+    logger.info(f"Retrieving all table names containing '{q}'")
 
-    logger.info(f"Retrieving all table names containing '{query}'")
+    filtered_tables = request_context.db_context.get_tables(q)
 
-    filtered_tables = request_context.db_context.get_tables(query)
+    logger.info(f"{len(filtered_tables):,.0f} table names containing '{q}'")
 
-    logger.info(f"{len(filtered_tables):,.0f} table names containing '{query}'")
-
-    result = json.dumps({"tables": filtered_tables, "count": len(filtered_tables), "query": query})
+    result = json.dumps({"tables": filtered_tables, "count": len(filtered_tables), "query": q})
 
     return result
 
@@ -103,7 +105,7 @@ def main():
     try:
         thread.start()
         
-        mcp.run(transport=ARGS.transport)
+        mcp.run(transport=ARGS.transport, host=ARGS.host, port=ARGS.port)
             
     except KeyboardInterrupt:
         logger.info("KeyboardInterrupt received")

@@ -15,7 +15,6 @@ class MCPServerArguments:
     transport: str
     debug: bool
     close_unused_connections_interval: int
-    stateless_http: bool
 
     def __init__(self,
                  name: str = DEFAULT_MCP_SERVER_NAME,
@@ -32,7 +31,6 @@ class MCPServerArguments:
         self.transport = transport
         self.debug = debug
         self.close_unused_connections_interval = close_unused_connections_interval
-        self.stateless_http = self.transport == "streamable-http"
 
     @staticmethod
     def load(is_entrypoint: bool):

@@ -1,13 +1,12 @@
-from datetime import datetime, date
 import json
-
-from mcp.server.fastmcp.utilities.logging import get_logger
+import logging
+from datetime import datetime, date
 
 from mcp_alchemy.request_context import RequestContext
 
 SHOW_KEY_ONLY = {"nullable", "autoincrement"}
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class ResponseFormatter:
@@ -17,8 +16,6 @@ class ResponseFormatter:
         self._request_context = request_context
 
     def get_schema_list_response(self, table_names):
-        table_names = self._request_context.get_parameter("table_names", table_names)
-
         logger.info(f"Retrieving schema definition for table names: '{table_names}'")
 
         table_schema_list = self._request_context.db_context.get_schema_details(table_names)
@@ -34,9 +31,6 @@ class ResponseFormatter:
         return all_schema_response
 
     def get_execute_query_response(self, query, params):
-        query = self._request_context.get_parameter("query", query)
-        params = self._request_context.get_parameter("params", params)
-            
         result = {
             "query": query,
             "params": params

@@ -1,11 +1,11 @@
+import logging
 import re
 import time
 
-from mcp.server.fastmcp.utilities.logging import get_logger
 from sqlalchemy import Connection, create_engine, text, inspect
 from sqlalchemy.engine import make_url
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 DISPOSE_UNUSED_CONNECTION_INTERVAL = 60 * 10
 

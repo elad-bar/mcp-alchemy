@@ -24,18 +24,10 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
  
 COPY ./mcp_alchemy/ ./mcp_alchemy/
- 
-# Create a non-root user
-RUN useradd -m -u 1000 mcpuser && chown -R mcpuser:mcpuser /app
-USER mcpuser
- 
+COPY entrypoint.sh .
+RUN sed -i 's/\r$//' entrypoint.sh && chmod +x entrypoint.sh
+
 # Expose port for HTTP transport
 EXPOSE 8000
 
-# Run the server as a module so package imports resolve
-# Use shell form to allow conditional debug flag based on build argument
-CMD if [ "$DEBUG_MODE" = "true" ]; then \
-      python mcp_alchemy/server.py --transport streamable-http --host 0.0.0.0 --port 8000 --debug true; \
-    else \
-      python mcp_alchemy/server.py --transport streamable-http --host 0.0.0.0 --port 8000; \
-    fi
+ENTRYPOINT ["./entrypoint.sh"]
