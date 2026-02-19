@@ -219,32 +219,38 @@ For streamable-http transport, use the MCP HTTP client:
 
 ### Docker Deployment
 
-For production deployments, you can run MCP Alchemy in Docker:
+A `Dockerfile` and `entrypoint.sh` are included in the repository. The entrypoint script supports installing SQLAlchemy dialect packages at container startup via the `DB_DIALECT_PACKAGES` environment variable.
 
-```dockerfile
-FROM python:3.11-slim
-
-RUN pip install mcp-alchemy psycopg2-binary
-
-ENV DB_URL="postgresql://user:password@dbhost/dbname"
-
-# Expose port for remote connections
-EXPOSE 8000
-
-# Start with SSE transport for remote access
-CMD ["python", "-m", "mcp_alchemy.server", "--transport", "sse", "--host", "0.0.0.0", "--port", "8000"]
-```
-
+**Build the image:**
 ```bash
-# Build and run
 docker build -t mcp-alchemy .
-docker run -p 8000:8000 -e DB_URL="postgresql://user:password@host/db" mcp-alchemy
 ```
 
-**Alternative with streamable-http:**
-```dockerfile
-CMD ["python", "-m", "mcp_alchemy.server", "--transport", "streamable-http", "--host", "0.0.0.0", "--port", "8000"]
+**Run with a dialect package (e.g. Vertica):**
+```bash
+docker run -p 8000:8000 \
+  -e DB_DIALECT_PACKAGES=sqlalchemy-vertica-python \
+  -e DB_URL="vertica+vertica_python://user:password@host:5433/dbname" \
+  mcp-alchemy
 ```
+
+**Run with multiple dialect packages:**
+```bash
+docker run -p 8000:8000 \
+  -e DB_DIALECT_PACKAGES=psycopg2-binary,pymysql \
+  -e DB_URL="postgresql://user:password@host/dbname" \
+  mcp-alchemy
+```
+
+**Run with debug mode enabled:**
+```bash
+docker run -p 8000:8000 \
+  -e DB_DIALECT_PACKAGES=psycopg2-binary \
+  -e DEBUG_MODE=true \
+  mcp-alchemy
+```
+
+The server starts on port 8000 with streamable-http transport by default.
 
 ### Security Considerations
 
@@ -261,6 +267,7 @@ When running as a remote server:
 - `DB_URL`: SQLAlchemy [database URL](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls) (required)
 - `EXECUTE_QUERY_MAX_CHARS`: Maximum output length (optional, default 4000)
 - `DB_ENGINE_OPTIONS`: JSON string containing additional SQLAlchemy engine options (optional)
+- `DB_DIALECT_PACKAGES`: Comma-separated list of pip packages to install at startup (Docker only, optional). Example: `sqlalchemy-vertica-python,pymysql`
 
 ## Connection Pooling
 
