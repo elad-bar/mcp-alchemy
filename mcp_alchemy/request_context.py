@@ -9,26 +9,26 @@ from time import sleep
 from fastmcp import Context
 from fastmcp.server.dependencies import get_http_headers
 
+from mcp_alchemy.connection_config import (
+    PARAM_DB_ENGINE_OPTIONS,
+    PARAM_EXECUTE_QUERY_MAX_CHARS,
+    SUPPORTED_ENV_VARS,
+    SUPPORTED_HEADERS,
+    merge_config,
+    normalize_header_key,
+    resolve_db_url,
+)
+
+__all__ = [
+    "RequestContext",
+    "SUPPORTED_ENV_VARS",
+    "SUPPORTED_HEADERS",
+]
 from mcp_alchemy.database_context import DatabaseContext
 
 logger = logging.getLogger(__name__)
 
 DISPOSE_UNUSED_CONNECTIONS_INTERVAL = 1
-
-PARAM_DB_URL = "DB_URL"
-PARAM_DB_ENGINE_OPTIONS = "DB_ENGINE_OPTIONS"
-PARAM_EXECUTE_QUERY_MAX_CHARS = "EXECUTE_QUERY_MAX_CHARS"
-
-SUPPORTED_ENV_VARS = [
-    PARAM_DB_URL,
-    PARAM_DB_ENGINE_OPTIONS,
-    PARAM_EXECUTE_QUERY_MAX_CHARS
-]
-
-SUPPORTED_HEADERS = {
-    f"x-{env_var.replace('_', '-')}".lower(): env_var
-    for env_var in SUPPORTED_ENV_VARS
-}
 
 DEFAULT_DB_ENGINE_OPTIONS = "{}"
 DEFAULT_EXECUTE_QUERY_MAX_CHARS = "4000"
@@ -57,27 +57,29 @@ class RequestContext:
 
     def __init__(self, ctx: Context | None = None):
         self.context = ctx
-        headers = get_http_headers(include_all=True)
+        raw_headers = get_http_headers(include_all=True) or {}
 
-        if headers:
-            data = {
-                self.header_key_to_env_var_format(key): value
-                for key, value in headers.items()
-            }
-        else:
-            data = {
-                key: os.environ[key]
-                for key in os.environ
-            }
+        headers: dict[str, str] = {}
+        for key, value in raw_headers.items():
+            env_key = normalize_header_key(key)
+            if env_key in SUPPORTED_ENV_VARS:
+                headers[env_key] = value
 
-        self.db_url = data.get(PARAM_DB_URL)
+        env = {
+            key: os.environ[key]
+            for key in SUPPORTED_ENV_VARS
+            if key in os.environ
+        }
 
-        if self.db_url is None:
-            raise ValueError("DB_URL cannot be None")
+        merged = merge_config(env, headers)
 
-        self.execute_query_max_chars = int(data.get(PARAM_EXECUTE_QUERY_MAX_CHARS, DEFAULT_EXECUTE_QUERY_MAX_CHARS))
+        self.db_url = resolve_db_url(merged)
 
-        db_engine_options = data.get(PARAM_DB_ENGINE_OPTIONS, DEFAULT_DB_ENGINE_OPTIONS)
+        self.execute_query_max_chars = int(
+            merged.get(PARAM_EXECUTE_QUERY_MAX_CHARS) or DEFAULT_EXECUTE_QUERY_MAX_CHARS
+        )
+
+        db_engine_options = merged.get(PARAM_DB_ENGINE_OPTIONS) or DEFAULT_DB_ENGINE_OPTIONS
 
         user_options = json.loads(db_engine_options)
 
@@ -95,6 +97,7 @@ class RequestContext:
 
         if db_context is None or not db_context.is_connected():
             db_context = DatabaseContext(self.db_url, self.db_engine_options)
+            DATABASE_CONTEXT_LIST[connection_id] = db_context
 
         self.db_context = db_context
 
@@ -102,13 +105,7 @@ class RequestContext:
 
     @staticmethod
     def header_key_to_env_var_format(key: str) -> str:
-        if key.lower().startswith("x-") and key in SUPPORTED_HEADERS:
-            key  = SUPPORTED_HEADERS.get(key)
-            
-        else:
-            key = key.upper()
-
-        return key
+        return normalize_header_key(key)
 
     @staticmethod
     def load(ctx: Context | None = None):
@@ -129,7 +126,6 @@ class RequestContext:
                 del DATABASE_CONTEXT_LIST[closed_connection]
 
             sleep(DISPOSE_UNUSED_CONNECTIONS_INTERVAL)
-
 
 
 

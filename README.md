@@ -197,7 +197,23 @@ For SSE transport, configure Claude Desktop to connect via HTTP:
 
 #### Using Streamable-HTTP Transport
 
-For streamable-http transport, use the MCP HTTP client:
+For streamable-http transport, use the MCP HTTP client. Configuration is merged from **container environment** and **HTTP headers** (header wins when both are set):
+
+| Header | Environment variable | Description |
+|--------|----------------------|-------------|
+| `X-DB-URL` | `DB_URL` | Full SQLAlchemy URL (optional if parts below are complete) |
+| `X-DB-DRIVER` | `DB_DRIVER` | Driver/dialect, e.g. `postgresql+psycopg2` |
+| `X-DB-HOST` | `DB_HOST` | Database host |
+| `X-DB-PORT` | `DB_PORT` | Database port (optional) |
+| `X-DB-NAME` | `DB_NAME` | Database name |
+| `X-DB-USER` | `DB_USER` | Username |
+| `X-DB-PASSWORD` | `DB_PASSWORD` | Password |
+| `X-DB-ENGINE-OPTIONS` | `DB_ENGINE_OPTIONS` | JSON string with SQLAlchemy engine options (optional) |
+| `X-EXECUTE-QUERY-MAX-CHARS` | `EXECUTE_QUERY_MAX_CHARS` | Maximum output length (optional) |
+
+None of the connection fields are required in the environment; you can supply everything per client via headers, or set shared defaults in the container and override per tenant in headers (typical for multi-instance Docker deployments).
+
+**Full URL (unchanged):**
 
 ```json
 {
@@ -212,10 +228,35 @@ For streamable-http transport, use the MCP HTTP client:
 }
 ```
 
-**Note:** With streamable-http, configuration is passed via HTTP headers:
-- `X-DB-URL`: Database connection string
-- `X-DB-ENGINE-OPTIONS`: JSON string with SQLAlchemy engine options (optional)
-- `X-EXECUTE-QUERY-MAX-CHARS`: Maximum output length (optional)
+**Shared server env + per-client credentials and database:**
+
+Container:
+
+```bash
+docker run -p 8000:8000 \
+  -e DB_DIALECT_PACKAGES=psycopg2-binary \
+  -e DB_DRIVER=postgresql+psycopg2 \
+  -e DB_HOST=db.internal \
+  -e DB_PORT=5432 \
+  mcp-alchemy
+```
+
+Client (only tenant-specific headers):
+
+```json
+{
+  "mcpServers": {
+    "tenant_a": {
+      "url": "http://localhost:8000/mcp",
+      "env": {
+        "X-DB-NAME": "tenant_a_db",
+        "X-DB-USER": "tenant_a_user",
+        "X-DB-PASSWORD": "secret"
+      }
+    }
+  }
+}
+```
 
 ### Docker Deployment
 
@@ -226,7 +267,20 @@ A `Dockerfile` and `entrypoint.sh` are included in the repository. The entrypoin
 docker build -t mcp-alchemy .
 ```
 
-**Run with a dialect package (e.g. Vertica):**
+**Run with connection parts in env (credentials can also come from client headers):**
+```bash
+docker run -p 8000:8000 \
+  -e DB_DIALECT_PACKAGES=sqlalchemy-vertica-python \
+  -e DB_DRIVER=vertica+vertica_python \
+  -e DB_HOST=host \
+  -e DB_PORT=5433 \
+  -e DB_NAME=dbname \
+  -e DB_USER=user \
+  -e DB_PASSWORD=password \
+  mcp-alchemy
+```
+
+**Run with full URL (legacy):**
 ```bash
 docker run -p 8000:8000 \
   -e DB_DIALECT_PACKAGES=sqlalchemy-vertica-python \
@@ -260,11 +314,19 @@ When running as a remote server:
 - **Authentication**: Consider implementing authentication layers
 - **Database Permissions**: Use database users with minimal required permissions
 - **TLS/SSL**: Use encrypted connections for database and MCP communication
-- **Environment Variables**: Secure sensitive configuration like database credentials
+- **Environment Variables**: Secure sensitive configuration like database credentials; prefer TLS in front of the MCP HTTP port when sending passwords in headers
 
 ## Environment Variables
 
-- `DB_URL`: SQLAlchemy [database URL](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls) (required)
+Connection settings apply to **stdio** from the environment only. For **streamable-http**, the same variables are optional defaults merged with `X-DB-*` headers (header overrides env).
+
+- `DB_URL`: Full SQLAlchemy [database URL](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls) (optional if driver, host, name, user, and password are provided)
+- `DB_DRIVER`: SQLAlchemy driver/dialect (e.g. `postgresql+psycopg2`, `vertica+vertica_python`)
+- `DB_HOST`: Database host
+- `DB_PORT`: Database port (optional)
+- `DB_NAME`: Database name
+- `DB_USER`: Database user (optional in env if sent via headers)
+- `DB_PASSWORD`: Database password (optional in env if sent via headers)
 - `EXECUTE_QUERY_MAX_CHARS`: Maximum output length (optional, default 4000)
 - `DB_ENGINE_OPTIONS`: JSON string containing additional SQLAlchemy engine options (optional)
 - `DB_DIALECT_PACKAGES`: Comma-separated list of pip packages to install at startup (Docker only, optional). Example: `sqlalchemy-vertica-python,pymysql`
