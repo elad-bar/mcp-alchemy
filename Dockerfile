@@ -1,5 +1,5 @@
 # Vertica MCP Server Dockerfile - Multi-Tenant Version
-# No environment variables needed - clients provide connection details at runtime
+# Connection details via env defaults and/or HTTP headers at runtime
 FROM python:3.11-slim
  
 # Set working directory
